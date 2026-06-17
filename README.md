@@ -35,6 +35,16 @@ The panel will appear automatically the next time you join a Google Meet or Airm
 | Google Meet | `meet.google.com` | Lower-left |
 | Airmeet | `*.airmeet.com` | Lower-right |
 
+## Joining a meeting late
+
+If you join after chat messages have already been sent, you can scroll back through the platform's native chat panel. The extension's MutationObserver will pick up every message that enters the DOM as you scroll, and they'll appear in the Human Chat panel — fully filtered, just like live messages.
+
+**Caveat:** messages recovered by scrolling back will appear in the panel in the order they were captured (i.e. the order you scrolled through them), not necessarily in the order they were originally sent. If you scroll around non-linearly the saved transcript may be out of chronological sequence.
+
+## Timestamps
+
+Saved transcripts include a timestamp for each message in the format `[10:32 AM] Sender: text`, but this reflects the time the extension captured the message, not the original send time from the platform. For messages received in real-time the difference is negligible. For messages recovered by scrolling back after a late join, all those entries will show roughly the same capture time rather than their original send times — the platform's timestamps exist in the chat DOM but are not currently extracted.
+
 ## Known bot list
 
 The extension filters messages from senders matching these tools (by name or message pattern): Otter / OtterPilot, Fireflies, Fathom, Krisp, Notta, tl;dv, Avoma, Fellow, Read.ai, MeetGeek, Gong, Chorus, Clari, Jamie, Tactiq, Grain, Nyota, Sembly, Vowel, Airgram, Bluedot, Supernormal, and generic patterns like "notetaker", "AI scribe", "meeting recorder".
