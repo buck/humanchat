@@ -1,0 +1,216 @@
+/* Human Chat for Google Meet
+   all: initial on the panel root resets cascaded/inherited styles from Meet's
+   own CSS, then we re-establish everything we need. Child elements inherit
+   font-family, font-size, color, and box-sizing from #hc-panel.            */
+
+#hc-panel {
+  all: initial;
+
+  /* layout */
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+
+  /* positioning — side and offset set by buildUI() via inline style */
+  position: fixed;
+  bottom: 80px;
+  width: 320px;
+  max-height: 460px;
+  z-index: 2147483647;
+
+  /* appearance */
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18), 0 0 0 1px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+
+  /* typography — inherited by children */
+  font-family: 'Google Sans', 'Roboto', Arial, sans-serif;
+  font-size: 13px;
+  color: #1a1a2e;
+  line-height: 1.4;
+}
+
+/* ── Header ─────────────────────────────────────────────────────────────── */
+
+#hc-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 12px;
+  background: #f0f0f5;
+  border-bottom: 1px solid #ddd;
+  cursor: move;
+  flex-shrink: 0;
+  user-select: none;
+  box-sizing: border-box;
+}
+
+#hc-title {
+  font-weight: 600;
+  font-size: 13px;
+  color: #4a4a8a;
+  flex: 1;
+}
+
+#hc-count {
+  font-size: 11px;
+  color: #888;
+}
+
+#hc-badge {
+  font-size: 10px;
+  background: rgba(200, 50, 50, 0.10);
+  color: #c0392b;
+  padding: 2px 7px;
+  border-radius: 20px;
+  display: none;
+}
+
+#hc-btns {
+  display: flex;
+  gap: 2px;
+}
+
+#hc-btns button {
+  all: initial;
+  font-family: inherit;
+  cursor: pointer;
+  color: #999;
+  font-size: 15px;
+  padding: 2px 7px;
+  border-radius: 4px;
+  line-height: 1;
+  transition: background 0.1s, color 0.1s;
+}
+
+#hc-btns button:hover {
+  background: rgba(0, 0, 0, 0.08);
+  color: #333;
+}
+
+/* ── Message list ────────────────────────────────────────────────────────── */
+
+#hc-msgs {
+  all: initial;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+  min-height: 80px;
+  max-height: 350px;
+  box-sizing: border-box;
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  list-style: none;
+  background: #ffffff;
+}
+
+#hc-msgs:empty::before {
+  content: 'Waiting for chat messages…';
+  color: #bbb;
+  font-style: italic;
+  font-size: 12px;
+}
+
+#hc-msgs::-webkit-scrollbar       { width: 4px; }
+#hc-msgs::-webkit-scrollbar-track { background: transparent; }
+#hc-msgs::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
+
+/* Individual message */
+.hc-msg {
+  display: grid;
+  grid-template-columns: 44px 1fr;
+  grid-template-rows: auto auto;
+  column-gap: 6px;
+  row-gap: 1px;
+  padding: 6px 8px;
+  background: #f6f6fb;
+  border-radius: 8px;
+  box-sizing: border-box;
+}
+
+.hc-time {
+  font-size: 10px;
+  color: #aaa;
+  grid-column: 1;
+  grid-row: 1;
+  align-self: center;
+}
+
+.hc-sender {
+  font-weight: 600;
+  font-size: 12px;
+  color: #4a4a8a;
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.hc-text {
+  font-size: 13px;
+  color: #222;
+  grid-column: 2;
+  grid-row: 2;
+  word-break: break-word;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+/* ── Footer ──────────────────────────────────────────────────────────────── */
+
+#hc-footer {
+  display: flex;
+  gap: 6px;
+  padding: 8px;
+  background: #f0f0f5;
+  border-top: 1px solid #ddd;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+#hc-footer button {
+  all: initial;
+  font-family: inherit;
+  flex: 1;
+  padding: 6px 4px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 600;
+  text-align: center;
+  border: 1px solid transparent;
+  box-sizing: border-box;
+  transition: background 0.12s;
+}
+
+#hc-save-txt  { background: #e6f4ea; color: #2e7d32; border-color: #b7dfbb; }
+#hc-save-json { background: #e3f2fd; color: #1565c0; border-color: #b3d4f5; }
+#hc-copy      { background: #fff8e1; color: #b45309; border-color: #f5dfa0; }
+
+#hc-save-txt:hover  { background: #c8e6c9; }
+#hc-save-json:hover { background: #bbdefb; }
+#hc-copy:hover      { background: #fdefc3; }
+
+/* ── Toggle pill (shown when panel is hidden) ────────────────────────────── */
+
+#hc-toggle {
+  all: initial;
+  font-family: 'Google Sans', 'Roboto', Arial, sans-serif;
+  position: fixed;
+  bottom: 80px;
+  padding: 8px 14px;
+  background: #ffffff;
+  color: #4a4a8a;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  z-index: 2147483647;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18), 0 0 0 1px rgba(0, 0, 0, 0.08);
+  transition: background 0.12s;
+}
+
+#hc-toggle:hover { background: #f0f0f5; }

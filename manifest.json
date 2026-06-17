@@ -1,0 +1,30 @@
+{
+  "manifest_version": 3,
+  "name": "Human Chat for Google Meet",
+  "version": "2.0.0",
+  "description": "Human-only chat panel for Google Meet and Airmeet. Filters AI notetakers in real-time. Save or export the chat history.",
+  "permissions": ["downloads"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://meet.google.com/*"],
+      "js": ["core.js", "adapter-meet.js"],
+      "css": ["styles.css"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://*.airmeet.com/*"],
+      "js": ["core.js", "adapter-airmeet.js"],
+      "css": ["styles.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "human-chat-meet@extension",
+      "strict_min_version": "109.0"
+    }
+  }
+}
