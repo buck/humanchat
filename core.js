@@ -53,6 +53,9 @@ window.HumanChat = (() => {
     /i('ll| will) (take|be taking) notes/i,
     /joining to (take notes|record)/i,
     /here to (take notes|record|transcribe)/i,
+    /i'?m an ai (assistant|notetaker) helping/i,
+    /helping .{1,60} take notes for this meeting/i,
+    /follow along the transcript here/i,
     /^\s*🤖/,
     /^\s*📝/,
   ];
@@ -257,8 +260,10 @@ window.HumanChat = (() => {
     const content  = fmt === 'json' ? buildJson() : buildTxt();
     const mime     = fmt === 'json' ? 'application/json' : 'text/plain';
     const label    = cfg.meetingLabel();
-    const date     = new Date().toISOString().slice(0, 10);
-    const filename = `${cfg.filenamePrefix}-${label}-${date}.${fmt}`;
+    const now      = new Date();
+    const date     = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+    const time     = `${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}`;
+    const filename = `${cfg.filenamePrefix}-${label}-${date}-${time}.${fmt}`;
     api.runtime.sendMessage({ type: 'DOWNLOAD', content, mime, filename });
   }
 

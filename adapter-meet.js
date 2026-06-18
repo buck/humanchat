@@ -29,24 +29,41 @@ function extractSenderAndText(el) {
   let sender = '';
   let text   = '';
 
-  // dir="auto" marks user-authored content
-  const dirAutos = Array.from(el.querySelectorAll('[dir="auto"]'));
-  if (dirAutos.length > 0) text = dirAutos[dirAutos.length - 1].textContent.trim();
+  // Text lives in div[jsname="dTKtvb"] in current Meet DOM
+  const textEl = el.querySelector('[jsname="dTKtvb"]');
+  if (textEl) text = textEl.textContent.trim();
 
-  // role="text" marks rich-text regions
+  // Fallbacks for older/alternate Meet DOM
+  if (!text) {
+    const dirAutos = Array.from(el.querySelectorAll('[dir="auto"]'));
+    if (dirAutos.length > 0) text = dirAutos[dirAutos.length - 1].textContent.trim();
+  }
   if (!text) {
     const roleTexts = el.querySelectorAll('[role="text"]');
     if (roleTexts.length > 0)
       text = Array.from(roleTexts).map(e => e.textContent.trim()).join(' ').trim();
   }
 
-  // First short leaf <span> that isn't a timestamp → sender name
-  for (const span of el.querySelectorAll('span')) {
-    const t = span.textContent.trim();
-    if (span.children.length === 0 && t && t.length < 80 &&
-        !/^\d{1,2}:\d{2}(\s*(AM|PM))?$/i.test(t)) {
-      sender = t;
-      break;
+  // Sender lives in the group header outside [data-message-id].
+  // Structure: [data-message-id] → messages container → group root
+  // Group root contains: [sender div][jsname="biJjHb" timestamp div]
+  const groupRoot = el.parentElement?.parentElement;
+  if (groupRoot) {
+    const timestamp = groupRoot.querySelector('[jsname="biJjHb"]');
+    if (timestamp?.previousElementSibling) {
+      sender = timestamp.previousElementSibling.textContent.trim();
+    }
+  }
+
+  // Fallback: leaf <span> (older Meet DOM)
+  if (!sender) {
+    for (const span of el.querySelectorAll('span')) {
+      const t = span.textContent.trim();
+      if (span.children.length === 0 && t && t.length < 80 &&
+          !/^\d{1,2}:\d{2}(\s*(AM|PM))?$/i.test(t)) {
+        sender = t;
+        break;
+      }
     }
   }
 
