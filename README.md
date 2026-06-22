@@ -4,6 +4,7 @@ A Chrome/Firefox extension that gives you a clean, human-only chat panel during 
 
 ## Features
 
+- **Sender context** — captures each person's title or company (when set in their profile) alongside their name, included in all exports
 - **Bot filtering** — automatically suppresses messages from Otter, Fireflies, Fathom, Gong, and 20+ other AI notetakers
 - **Live panel** — draggable, minimizable overlay that sits alongside the meeting UI
 - **Export** — save the chat as `.txt` or `.json`, or copy it to the clipboard with one click
