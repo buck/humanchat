@@ -34,7 +34,10 @@ function parseMessage(el) {
   if (header) {
     const ps = [...header.querySelectorAll('p')];
     if (ps.length > 2) {
-      subtitle = ps.slice(1, -1).map(p => p.textContent.trim()).filter(Boolean).join(' · ');
+      subtitle = ps.slice(1, -1)
+        .map(p => p.textContent.trim())
+        .filter(s => s && !/^[·•|\-–—]+$/.test(s))
+        .join(' · ');
     }
   }
 
