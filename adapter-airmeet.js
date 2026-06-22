@@ -24,16 +24,26 @@ function parseMessage(el) {
   if (!label.startsWith(prefix)) return null;
   const rest   = label.slice(prefix.length);
   const dotIdx = rest.indexOf('. ');
-  if (dotIdx === -1) return { sender: rest.trim(), text: '' };
-  return {
-    sender: rest.slice(0, dotIdx).trim(),
-    text:   rest.slice(dotIdx + 2).trim(),
-  };
+  const sender = dotIdx === -1 ? rest.trim() : rest.slice(0, dotIdx).trim();
+  const text   = dotIdx === -1 ? '' : rest.slice(dotIdx + 2).trim();
+
+  // Subtitle lives in .feed-item-header as extra <p> elements between name (first) and timestamp (last).
+  // When no subtitle: 2 paragraphs. When subtitle present: 3+.
+  let subtitle = '';
+  const header = el.closest('.feed-item-container')?.querySelector('.feed-item-header');
+  if (header) {
+    const ps = [...header.querySelectorAll('p')];
+    if (ps.length > 2) {
+      subtitle = ps.slice(1, -1).map(p => p.textContent.trim()).filter(Boolean).join(' · ');
+    }
+  }
+
+  return { sender, text, subtitle };
 }
 
 function handleElement(el) {
   const parsed = parseMessage(el);
-  if (parsed && parsed.text) HumanChat.recordMessage(parsed.sender, parsed.text);
+  if (parsed && parsed.text) HumanChat.recordMessage(parsed.sender, parsed.text, undefined, parsed.subtitle);
 }
 
 // ── Observer ──────────────────────────────────────────────────────────────────

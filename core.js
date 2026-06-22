@@ -76,7 +76,7 @@ window.HumanChat = (() => {
   let filteredCount = 0;
   const seenKeys = new Set();
 
-  function recordMessage(sender, text, id) {
+  function recordMessage(sender, text, id, subtitle) {
     if (!text) return;
     const key = id || `${sender}\x00${text}`;
     if (seenKeys.has(key)) return;
@@ -93,6 +93,7 @@ window.HumanChat = (() => {
       time: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       ts: now.toISOString(),
       sender: sender || '(unknown)',
+      subtitle: subtitle || '',
       text,
     };
     humanMessages.push(msg);
@@ -171,6 +172,7 @@ window.HumanChat = (() => {
     li.innerHTML =
       `<span class="hc-time">${esc(msg.time)}</span>` +
       `<span class="hc-sender">${esc(msg.sender)}</span>` +
+      (msg.subtitle ? `<span class="hc-subtitle">${esc(msg.subtitle)}</span>` : '') +
       `<span class="hc-text">${esc(msg.text)}</span>`;
     msgList.appendChild(li);
     msgList.scrollTop = msgList.scrollHeight;
@@ -241,7 +243,10 @@ window.HumanChat = (() => {
       `${humanMessages.length} message${humanMessages.length === 1 ? '' : 's'}${filtered}`,
       '─'.repeat(50),
       '',
-      ...humanMessages.map(m => `[${m.time}] ${m.sender}: ${m.text}`),
+      ...humanMessages.map(m => {
+        const who = m.subtitle ? `${m.sender} (${m.subtitle})` : m.sender;
+        return `[${m.time}] ${who}: ${m.text}`;
+      }),
     ].join('\n');
   }
 
