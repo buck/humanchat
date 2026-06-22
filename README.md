@@ -49,6 +49,10 @@ Saved transcripts include a timestamp for each message in the format `[10:32 AM]
 
 The extension filters messages from senders matching these tools (by name or message pattern): Otter / OtterPilot, Fireflies, Fathom, Krisp, Notta, tl;dv, Avoma, Fellow, Read.ai, MeetGeek, Gong, Chorus, Clari, Jamie, Tactiq, Grain, Nyota, Sembly, Vowel, Airgram, Bluedot, Supernormal, and generic patterns like "notetaker", "AI scribe", "meeting recorder".
 
+## Something not working?
+
+See [DEBUGGING.md](DEBUGGING.md) for a step-by-step guide on how to collect diagnostic information and file a bug report.
+
 ## File structure
 
 ```
