@@ -14,7 +14,7 @@ When a chat message quotes an earlier message, the quoted bubble appears as a ne
 Add `adapter-teams.js` for `teams.microsoft.com` (work) and `teams.live.com` (personal).
 
 - Teams browser uses stable `data-tid` attributes (e.g. `data-tid="messageBodyContent"`) — more resilient than Airmeet's class names
-- Only new Teams is installed on the dev machine (classic and auto-installer were removed) — target new Teams DOM only
+- Two Teams variants exist: classic and new Teams (2023 rewrite, same URL) — initial development will target new Teams only; classic Teams support can be added later
 - Several paid extensions target Teams browser successfully, so the DOM is hookable
 - Requires a live Teams browser meeting for DOM inspection (same console snippet approach as Airmeet)
 - Once selectors are confirmed, the adapter should be ~30 lines given the shared core
