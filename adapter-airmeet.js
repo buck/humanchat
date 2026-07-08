@@ -10,6 +10,7 @@ HumanChat.init({
   meetingLabel:  () =>
     location.pathname.replace(/^\/+/, '').replace(/[/\\:*?"<>|]/g, '-') || 'meeting',
   autoscroll:    { start: startAutoScroll, stop: stopAutoScroll },
+  captureQA,
 });
 
 // ── Airmeet DOM parsing ───────────────────────────────────────────────────────
@@ -69,6 +70,107 @@ function startObserver() {
     }
   });
   observer.observe(document.body, { childList: true, subtree: true });
+}
+
+// ── Q&A Capture ───────────────────────────────────────────────────────────────
+//
+// On demand: clicks the Q&A tab, scrolls the full list to surface virtualized
+// cards, harvests unique questions, then switches back to Chat.
+
+function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+async function captureQA() {
+  const qaTab   = document.querySelector('[data-title="Q&A"]');
+  const chatTab = document.querySelector('[data-title="Chat"]');
+  if (!qaTab) return;
+
+  qaTab.click();
+  await delay(400);
+
+  const scroller = findQAScroller();
+  if (!scroller) { chatTab?.click(); return; }
+
+  scroller.scrollTop = 0;
+  await delay(200);
+
+  // Step through the list so virtualized rows render at each position.
+  let prevTop = -1;
+  while (scroller.scrollTop !== prevTop) {
+    sweepQACards(scroller);
+    prevTop = scroller.scrollTop;
+    scroller.scrollTop += Math.max(scroller.clientHeight * 0.75, 100);
+    await delay(200);
+  }
+  sweepQACards(scroller);  // final pass at bottom
+
+  chatTab?.click();
+}
+
+function findQAScroller() {
+  // Airmeet uses a class with a stable readable prefix for its scroll containers.
+  // After switching to Q&A the chat list is hidden (offsetHeight === 0).
+  for (const el of document.querySelectorAll('[class*="ScrollbarList"]')) {
+    if (el.offsetHeight > 0) return el;
+  }
+  // Fallback: walk up from the Q&A tab looking for an overflowing ancestor.
+  let p = document.querySelector('[data-title="Q&A"]')?.parentElement;
+  while (p && p !== document.body) {
+    const ov = getComputedStyle(p).overflowY;
+    if ((ov === 'auto' || ov === 'scroll') && p.scrollHeight > p.clientHeight && p.offsetHeight > 0)
+      return p;
+    p = p.parentElement;
+  }
+  return null;
+}
+
+function sweepQACards(scroller) {
+  for (const card of findQACards(scroller)) {
+    const parsed = parseQACard(card);
+    if (parsed) HumanChat.recordQA(parsed.sender, parsed.subtitle, parsed.question);
+  }
+}
+
+// Walk down from the scroller until we find a container level where every
+// visible child is exactly one Q&A card.  Each card has exactly one
+// "Mark as" button in its subtree, which is a reliable structural marker.
+function findQACards(root) {
+  const countMark = el => (el.textContent.match(/Mark as/gi) || []).length;
+  let el = root;
+  for (let depth = 0; depth < 8; depth++) {
+    const visible = [...el.children].filter(c => c.offsetHeight > 0);
+    if (visible.length >= 1 && visible.every(c => countMark(c) === 1)) return visible;
+    if (visible.length === 1) { el = visible[0]; continue; }
+    break;
+  }
+  return [];
+}
+
+function parseQACard(el) {
+  const raw = el.textContent || '';
+  // Strip UI chrome that Airmeet injects into every card.
+  const clean = raw
+    .replace(/\bAnswered\b/g, '')
+    .replace(/Mark as (?:Un)?answered/gi, '')
+    .replace(/[ \t]+/g, ' ')
+    .trim();
+
+  // Timestamp is our split point ("42 minutes ago", "an hour ago", etc.)
+  const agoM = clean.match(/\b(?:(?:an?\s+)|(?:\d+\s+))(?:second|minute|hour)s?\s+ago\b/i);
+  if (!agoM) return null;
+
+  const split    = clean.indexOf(agoM[0]);
+  let   question = clean.slice(split + agoM[0].length).trim();
+  question = question.replace(/\s+\d+\s*$/, '').trim();  // strip trailing upvote count
+  if (!question || question.length < 5) return null;
+
+  // Text before the timestamp: "Name · Org" or just "Name"
+  const before = clean.slice(0, split).replace(/[·\s]+$/, '').trim();
+  const parts  = before.split('·').map(s => s.trim()).filter(Boolean);
+  return {
+    sender:   parts[0] || '(unknown)',
+    subtitle: parts.slice(1).join(' · '),
+    question,
+  };
 }
 
 // ── Autoscroll ────────────────────────────────────────────────────────────────

@@ -76,6 +76,11 @@ window.HumanChat = (() => {
   let filteredCount = 0;
   const seenKeys = new Set();
 
+  // ── Q&A store ──────────────────────────────────────────────────────────────
+
+  let qaItems = [];
+  const seenQA = new Set();
+
   function recordMessage(sender, text, id, subtitle) {
     if (!text) return;
     const key = id || `${sender}\x00${text}`;
@@ -101,10 +106,18 @@ window.HumanChat = (() => {
     setCount(humanMessages.length);
   }
 
+  function recordQA(sender, subtitle, question) {
+    if (!question || seenQA.has(question)) return;
+    seenQA.add(question);
+    qaItems.push({ sender: sender || '(unknown)', subtitle: subtitle || '', question });
+  }
+
   function resetStore() {
     humanMessages = [];
     filteredCount = 0;
     seenKeys.clear();
+    qaItems = [];
+    seenQA.clear();
     if (msgList) msgList.innerHTML = '';
     setBadge(0);
     setCount(0);
@@ -137,6 +150,7 @@ window.HumanChat = (() => {
         <button id="hc-save-txt">Save .txt</button>
         <button id="hc-save-json">Save .json</button>
         <button id="hc-copy">Copy</button>
+        ${cfg.captureQA ? '<button id="hc-qa">Q&amp;A</button>' : ''}
       </div>
     `;
 
@@ -174,6 +188,17 @@ window.HumanChat = (() => {
     panel.querySelector('#hc-save-json').onclick = () => saveChat('json');
     panel.querySelector('#hc-copy').onclick      = copyChat;
     toggleBtn.onclick = showPanel;
+
+    if (cfg.captureQA) {
+      const qaBtn = panel.querySelector('#hc-qa');
+      qaBtn.onclick = async () => {
+        qaBtn.disabled = true;
+        qaBtn.textContent = 'Scanning…';
+        await cfg.captureQA();
+        qaBtn.textContent = qaItems.length ? `Q&A (${qaItems.length})` : 'Q&A';
+        qaBtn.disabled = false;
+      };
+    }
   }
 
   function appendMsg(msg) {
@@ -272,7 +297,7 @@ window.HumanChat = (() => {
     const filtered = cfg.filterBots
       ? ` · ${filteredCount} bot message${filteredCount === 1 ? '' : 's'} filtered`
       : '';
-    return [
+    const lines = [
       `${cfg.title} — ${label}`,
       date,
       `${humanMessages.length} message${humanMessages.length === 1 ? '' : 's'}${filtered}`,
@@ -282,7 +307,19 @@ window.HumanChat = (() => {
         const who = m.subtitle ? `${m.sender} (${m.subtitle})` : m.sender;
         return `[${m.time}] ${who}: ${m.text}`;
       }),
-    ].join('\n');
+    ];
+
+    if (qaItems.length > 0) {
+      lines.push('', '─'.repeat(50));
+      lines.push(`Q&A — ${qaItems.length} question${qaItems.length === 1 ? '' : 's'}`);
+      lines.push('─'.repeat(50), '');
+      for (const q of qaItems) {
+        const who = q.subtitle ? `${q.sender} (${q.subtitle})` : q.sender;
+        lines.push(`[Q] ${who}`, q.question, '');
+      }
+    }
+
+    return lines.join('\n');
   }
 
   function buildJson() {
@@ -292,6 +329,7 @@ window.HumanChat = (() => {
       messages:   humanMessages,
     };
     if (cfg.filterBots) out.filteredCount = filteredCount;
+    if (qaItems.length > 0) out.qa = qaItems;
     return JSON.stringify(out, null, 2);
   }
 
@@ -329,6 +367,6 @@ window.HumanChat = (() => {
     obs.observe(document.body, { childList: true, subtree: true });
   }
 
-  return { init, recordMessage, resetStore, watchMeetingEnd, saveChat };
+  return { init, recordMessage, recordQA, resetStore, watchMeetingEnd, saveChat };
 
 })();

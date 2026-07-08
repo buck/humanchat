@@ -201,10 +201,14 @@
 #hc-save-txt  { background: #e6f4ea; color: #2e7d32; border-color: #b7dfbb; }
 #hc-save-json { background: #e3f2fd; color: #1565c0; border-color: #b3d4f5; }
 #hc-copy      { background: #fff8e1; color: #b45309; border-color: #f5dfa0; }
+#hc-qa        { background: #f3e5f5; color: #6a1b9a; border-color: #ce93d8; }
 
 #hc-save-txt:hover  { background: #c8e6c9; }
 #hc-save-json:hover { background: #bbdefb; }
 #hc-copy:hover      { background: #fdefc3; }
+#hc-qa:hover        { background: #e1bee7; }
+
+#hc-footer button:disabled { opacity: 0.6; cursor: default; }
 
 /* ── Toggle pill (shown when panel is hidden) ────────────────────────────── */
 
