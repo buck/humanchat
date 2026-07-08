@@ -9,6 +9,7 @@ HumanChat.init({
   filenamePrefix: 'airmeet-chat',
   meetingLabel:  () =>
     location.pathname.replace(/^\/+/, '').replace(/[/\\:*?"<>|]/g, '-') || 'meeting',
+  autoscroll:    { start: startAutoScroll, stop: stopAutoScroll },
 });
 
 // ── Airmeet DOM parsing ───────────────────────────────────────────────────────
@@ -68,6 +69,37 @@ function startObserver() {
     }
   });
   observer.observe(document.body, { childList: true, subtree: true });
+}
+
+// ── Autoscroll ────────────────────────────────────────────────────────────────
+
+function findChatScroller() {
+  const msg = document.querySelector(MSG_SELECTOR);
+  if (!msg) return null;
+  let el = msg.parentElement;
+  while (el && el !== document.body) {
+    const ov = getComputedStyle(el).overflowY;
+    if ((ov === 'auto' || ov === 'scroll') && el.scrollHeight > el.clientHeight) return el;
+    el = el.parentElement;
+  }
+  return null;
+}
+
+let autoScrollTimer = null;
+
+function startAutoScroll() {
+  if (autoScrollTimer) return;
+  autoScrollTimer = setInterval(() => {
+    const el = findChatScroller();
+    if (el && el.scrollTop + el.clientHeight < el.scrollHeight - 5) {
+      el.scrollTop = el.scrollHeight;
+    }
+  }, 500);
+}
+
+function stopAutoScroll() {
+  clearInterval(autoScrollTimer);
+  autoScrollTimer = null;
 }
 
 // ── Init ──────────────────────────────────────────────────────────────────────

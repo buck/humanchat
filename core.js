@@ -112,9 +112,13 @@ window.HumanChat = (() => {
 
   // ── UI ────────────────────────────────────────────────────────────────────
 
-  let panel, msgList, badge, countEl, toggleBtn;
+  let panel, msgList, badge, countEl, toggleBtn, autoScrollBtn;
+  let autoScrollOn = false;
 
   function buildUI() {
+    document.getElementById('hc-panel')?.remove();
+    document.getElementById('hc-toggle')?.remove();
+
     panel = document.createElement('div');
     panel.id = 'hc-panel';
     panel.innerHTML = `
@@ -123,6 +127,7 @@ window.HumanChat = (() => {
         <span id="hc-count"></span>
         <span id="hc-badge"></span>
         <div id="hc-btns">
+          ${cfg.autoscroll ? '<button id="hc-autoscroll" title="Toggle autoscroll">⬇ Auto</button>' : ''}
           <button id="hc-min" title="Minimize">−</button>
           <button id="hc-close" title="Hide">✕</button>
         </div>
@@ -156,6 +161,12 @@ window.HumanChat = (() => {
     countEl = panel.querySelector('#hc-count');
 
     makeDraggable(panel, panel.querySelector('#hc-header'));
+
+    if (cfg.autoscroll) {
+      autoScrollBtn = panel.querySelector('#hc-autoscroll');
+      autoScrollBtn.onclick = toggleAutoScroll;
+      enableAutoScroll();
+    }
 
     panel.querySelector('#hc-min').onclick       = toggleMinimize;
     panel.querySelector('#hc-close').onclick     = hidePanel;
@@ -227,6 +238,30 @@ window.HumanChat = (() => {
       document.addEventListener('mouseup', up);
       e.preventDefault();
     });
+  }
+
+  // ── Autoscroll toggle ─────────────────────────────────────────────────────
+
+  function enableAutoScroll() {
+    autoScrollOn = true;
+    if (autoScrollBtn) {
+      autoScrollBtn.textContent = '⬇ Auto';
+      autoScrollBtn.classList.add('hc-autoscroll-on');
+    }
+    cfg.autoscroll?.start();
+  }
+
+  function disableAutoScroll() {
+    autoScrollOn = false;
+    if (autoScrollBtn) {
+      autoScrollBtn.textContent = '⏸';
+      autoScrollBtn.classList.remove('hc-autoscroll-on');
+    }
+    cfg.autoscroll?.stop();
+  }
+
+  function toggleAutoScroll() {
+    autoScrollOn ? disableAutoScroll() : enableAutoScroll();
   }
 
   // ── Export ────────────────────────────────────────────────────────────────

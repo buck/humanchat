@@ -89,6 +89,9 @@
   color: #333;
 }
 
+#hc-autoscroll { font-size: 11px; color: #aaa; }
+#hc-autoscroll.hc-autoscroll-on { color: #2e7d32; }
+
 /* ── Message list ────────────────────────────────────────────────────────── */
 
 #hc-msgs {
