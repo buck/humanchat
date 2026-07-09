@@ -2,6 +2,8 @@
 
 // ── Platform config ───────────────────────────────────────────────────────────
 
+let autoScrollTimer = null;
+
 HumanChat.init({
   title:         'Airmeet Chat',
   position:      'right',
@@ -55,8 +57,12 @@ function handleElement(el) {
 
 let observer = null;
 
-function startObserver() {
+function sweepExisting() {
   document.querySelectorAll(MSG_SELECTOR).forEach(handleElement);
+}
+
+function startObserver() {
+  sweepExisting();
   if (observer) observer.disconnect();
   observer = new MutationObserver(mutations => {
     for (const mut of mutations) {
@@ -70,6 +76,14 @@ function startObserver() {
     }
   });
   observer.observe(document.body, { childList: true, subtree: true });
+
+  // Airmeet's SPA renders chat after document_idle fires, so the initial
+  // sweep above often finds nothing. Retry at increasing delays to catch
+  // messages that appeared after the observer started but before any
+  // mutation event triggered (e.g. static/ended meeting views).
+  setTimeout(sweepExisting, 1000);
+  setTimeout(sweepExisting, 3000);
+  setTimeout(sweepExisting, 8000);
 }
 
 // ── Q&A Capture ───────────────────────────────────────────────────────────────
@@ -186,8 +200,6 @@ function findChatScroller() {
   }
   return null;
 }
-
-let autoScrollTimer = null;
 
 function startAutoScroll() {
   if (autoScrollTimer) return;
