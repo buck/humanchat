@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Human Chat for Online Meetings",
-  "version": "2.3.4",
+  "version": "2.3.5",
   "description": "Human-only chat panel for Google Meet, Airmeet, and Zoom web. Filters AI notetakers in real-time. Save or export the chat history.",
   "icons": {
     "16": "icon-16.png",

@@ -175,9 +175,9 @@ function parseQACard(el) {
   let   question = clean.slice(split + agoM[0].length)
     .replace(/^[\s*·]+/, '')           // strip leading **, ·, whitespace
     .trim();
-  const votesM  = question.match(/\s+(\d+)\s*$/);
+  const votesM  = question.match(/(\d+)\s*$/);
   const votes   = votesM ? parseInt(votesM[1], 10) : 0;
-  question = question.replace(/\s+\d+\s*$/, '').trim();
+  question = question.replace(/\d+\s*$/, '').trim();
   if (!question || question.length < 5) return null;
 
   const before = clean.slice(0, split).replace(/[·\s]+$/, '').trim();
