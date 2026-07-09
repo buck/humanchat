@@ -106,10 +106,10 @@ window.HumanChat = (() => {
     setCount(humanMessages.length);
   }
 
-  function recordQA(sender, subtitle, question) {
+  function recordQA(sender, subtitle, question, votes) {
     if (!question || seenQA.has(question)) return;
     seenQA.add(question);
-    qaItems.push({ sender: sender || '(unknown)', subtitle: subtitle || '', question });
+    qaItems.push({ sender: sender || '(unknown)', subtitle: subtitle || '', question, votes: votes || 0 });
   }
 
   function resetStore() {
@@ -314,8 +314,9 @@ window.HumanChat = (() => {
       lines.push(`Q&A — ${qaItems.length} question${qaItems.length === 1 ? '' : 's'}`);
       lines.push('─'.repeat(50), '');
       for (const q of qaItems) {
-        const who = q.subtitle ? `${q.sender} (${q.subtitle})` : q.sender;
-        lines.push(`[Q] ${who}`, q.question, '');
+        const who      = q.subtitle ? `${q.sender} (${q.subtitle})` : q.sender;
+        const voteStr  = q.votes ? ` [${q.votes} vote${q.votes === 1 ? '' : 's'}]` : '';
+        lines.push(`[Q] ${who}${voteStr}`, q.question, '');
       }
     }
 

@@ -140,7 +140,7 @@ function findQAScroller() {
 function sweepQACards(scroller) {
   for (const card of findQACards(scroller)) {
     const parsed = parseQACard(card);
-    if (parsed) HumanChat.recordQA(parsed.sender, parsed.subtitle, parsed.question);
+    if (parsed) HumanChat.recordQA(parsed.sender, parsed.subtitle, parsed.question, parsed.votes);
   }
 }
 
@@ -175,7 +175,9 @@ function parseQACard(el) {
   let   question = clean.slice(split + agoM[0].length)
     .replace(/^[\s*·]+/, '')           // strip leading **, ·, whitespace
     .trim();
-  question = question.replace(/\s+\d+\s*$/, '').trim();  // strip trailing upvote count
+  const votesM  = question.match(/\s+(\d+)\s*$/);
+  const votes   = votesM ? parseInt(votesM[1], 10) : 0;
+  question = question.replace(/\s+\d+\s*$/, '').trim();
   if (!question || question.length < 5) return null;
 
   const before = clean.slice(0, split).replace(/[·\s]+$/, '').trim();
@@ -184,6 +186,7 @@ function parseQACard(el) {
     sender:   parts[0] || '(unknown)',
     subtitle: parts.slice(1).join(' · '),
     question,
+    votes,
   };
 }
 
