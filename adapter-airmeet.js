@@ -105,7 +105,7 @@ async function captureQA() {
   if (!scroller) { chatTab?.click(); return; }
 
   scroller.scrollTop = 0;
-  await delay(200);
+  await delay(400);
 
   // Step through the list so virtualized rows render at each position.
   let prevTop = -1;
@@ -113,7 +113,7 @@ async function captureQA() {
     sweepQACards(scroller);
     prevTop = scroller.scrollTop;
     scroller.scrollTop += Math.max(scroller.clientHeight * 0.75, 100);
-    await delay(200);
+    await delay(400);
   }
   sweepQACards(scroller);  // final pass at bottom
 
@@ -161,23 +161,23 @@ function findQACards(root) {
 
 function parseQACard(el) {
   const raw = el.textContent || '';
-  // Strip UI chrome that Airmeet injects into every card.
   const clean = raw
-    .replace(/\bAnswered\b/g, '')
     .replace(/Mark as (?:Un)?answered/gi, '')
+    .replace(/(?:Un)?answered/gi, '')   // also removes concatenated "GarzaAnswered" etc.
     .replace(/[ \t]+/g, ' ')
     .trim();
 
-  // Timestamp is our split point ("42 minutes ago", "an hour ago", etc.)
-  const agoM = clean.match(/\b(?:(?:an?\s+)|(?:\d+\s+))(?:second|minute|hour)s?\s+ago\b/i);
+  // No trailing \b: question text often runs directly into "ago" with no space.
+  const agoM = clean.match(/\b(?:(?:an?\s+)|(?:\d+\s+))(?:second|minute|hour)s?\s+ago/i);
   if (!agoM) return null;
 
   const split    = clean.indexOf(agoM[0]);
-  let   question = clean.slice(split + agoM[0].length).trim();
+  let   question = clean.slice(split + agoM[0].length)
+    .replace(/^[\s*·]+/, '')           // strip leading **, ·, whitespace
+    .trim();
   question = question.replace(/\s+\d+\s*$/, '').trim();  // strip trailing upvote count
   if (!question || question.length < 5) return null;
 
-  // Text before the timestamp: "Name · Org" or just "Name"
   const before = clean.slice(0, split).replace(/[·\s]+$/, '').trim();
   const parts  = before.split('·').map(s => s.trim()).filter(Boolean);
   return {
