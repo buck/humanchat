@@ -17,18 +17,28 @@ HumanChat.init({
 //
 // Zoom renders chat inside a same-origin iframe (#webclient). Each message is
 // a .chat-item-container. Sender is in .chat-item__sender[data-name]. Text
-// lives in ._rtfEditor_1n3rs_1 paragraphs; emoji are <img data-emoji="…">.
+// lives in .chat-message__text-box; emoji are <img data-emoji="…">.
 
 const MSG_SELECTOR = '.chat-item-container';
 
+const downloadedIds = new Set();
+
 function extractText(el) {
-  const editor = el.querySelector('._rtfEditor_1n3rs_1');
-  if (!editor) return '';
-  return [...editor.querySelectorAll('p')].map(p =>
-    [...p.childNodes].map(n =>
+  const box = el.querySelector('.chat-message__text-box');
+  if (box) {
+    return [...box.childNodes].map(n =>
       n.nodeName === 'IMG' ? (n.dataset.emoji || '') : n.textContent
-    ).join('')
-  ).join('\n').trim();
+    ).join('').trim();
+  }
+  const fileItem = el.querySelector('.chat-file-item[title]');
+  if (fileItem) {
+    const name = fileItem.title;
+    const ariaLabel = el.querySelector('.chat-message__container')?.getAttribute('aria-label') || '';
+    const sizeMatch = ariaLabel.match(/,\s*([\d.]+\s*(?:KB|MB|GB|B))\s*,/i);
+    const size = sizeMatch ? ` (${sizeMatch[1]})` : '';
+    return `[file] ${name}${size}`;
+  }
+  return '';
 }
 
 function handleMessageNode(el) {
@@ -36,6 +46,12 @@ function handleMessageNode(el) {
   const sender = el.querySelector('.chat-item__sender')?.dataset.name || '';
   const text   = extractText(el);
   if (text) HumanChat.recordMessage(sender, text, id);
+
+  const fileItem = el.querySelector('.chat-file-item');
+  if (fileItem && id && !downloadedIds.has(id)) {
+    downloadedIds.add(id);
+    fileItem.click();
+  }
 }
 
 // ── Observer ──────────────────────────────────────────────────────────────────

@@ -10,6 +10,15 @@ When a chat message quotes an earlier message, the quoted bubble appears as a ne
 
 ## Planned
 
+### Zoom: aria-label fallback for text extraction
+`.chat-message__text-box` is stable but if it ever breaks again, `.chat-message__container[aria-label]` already contains the full message as `"Sender to Everyone, HH:MM:SS PM, <text>"`. Add it as a fallback in `extractText()` so the extension self-heals without a code push.
+
+### Zoom: auto-open chat to prevent missed messages
+Zoom closes the chat panel (and removes message DOM nodes) during webinars — messages sent while chat is closed are never seen by the MutationObserver. Options:
+- Periodic sweep: every N seconds, click the chat button to open it, run `sweepExisting()`, then close
+- Sticky open: intercept Zoom's close action and re-open immediately
+- Least-disruptive: add a "Keep open" toggle to the HC panel that clicks the Zoom chat button whenever it gets hidden
+
 ### Microsoft Teams support
 Add `adapter-teams.js` for `teams.microsoft.com` (work) and `teams.live.com` (personal).
 
