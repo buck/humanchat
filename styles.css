@@ -171,6 +171,25 @@
   -webkit-user-select: text;
 }
 
+/* AI / bot messages (hidden by default, toggled via badge click) */
+.hc-bot {
+  background: #f5f0e8;
+  opacity: 0.85;
+}
+
+.hc-bot .hc-sender {
+  color: #8a7a5a;
+}
+
+.hc-bot .hc-sender::after {
+  content: ' 🤖';
+  font-size: 10px;
+}
+
+.hc-bot .hc-text {
+  color: #777;
+}
+
 /* ── Footer ──────────────────────────────────────────────────────────────── */
 
 #hc-footer {

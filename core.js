@@ -56,6 +56,7 @@ window.HumanChat = (() => {
     /i'?m an ai (assistant|notetaker) helping/i,
     /helping .{1,60} take notes for this meeting/i,
     /follow along the transcript here/i,
+    /otter\.ai\//i,
     /^\s*🤖/,
     /^\s*📝/,
   ];
@@ -73,7 +74,9 @@ window.HumanChat = (() => {
   // ── Message store ─────────────────────────────────────────────────────────
 
   let humanMessages = [];
+  let botMessages   = [];
   let filteredCount = 0;
+  let showBots      = false;
   const seenKeys = new Set();
 
   // ── Q&A store ──────────────────────────────────────────────────────────────
@@ -87,12 +90,6 @@ window.HumanChat = (() => {
     if (seenKeys.has(key)) return;
     seenKeys.add(key);
 
-    if (isBot(sender, text)) {
-      filteredCount++;
-      setBadge(filteredCount);
-      return;
-    }
-
     const now = new Date();
     const msg = {
       time: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -101,8 +98,17 @@ window.HumanChat = (() => {
       subtitle: subtitle || '',
       text,
     };
+
+    if (isBot(sender, text)) {
+      filteredCount++;
+      botMessages.push(msg);
+      appendMsg(msg, true);
+      setBadge(filteredCount);
+      return;
+    }
+
     humanMessages.push(msg);
-    appendMsg(msg);
+    appendMsg(msg, false);
     setCount(humanMessages.length);
   }
 
@@ -114,13 +120,24 @@ window.HumanChat = (() => {
 
   function resetStore() {
     humanMessages = [];
+    botMessages   = [];
     filteredCount = 0;
+    showBots      = false;
     seenKeys.clear();
     qaItems = [];
     seenQA.clear();
     if (msgList) msgList.innerHTML = '';
     setBadge(0);
     setCount(0);
+  }
+
+  function toggleBots() {
+    showBots = !showBots;
+    msgList.querySelectorAll('.hc-bot').forEach(el => {
+      el.style.display = showBots ? '' : 'none';
+    });
+    setBadge(filteredCount);
+    if (showBots) msgList.scrollTop = msgList.scrollHeight;
   }
 
   // ── UI ────────────────────────────────────────────────────────────────────
@@ -173,6 +190,7 @@ window.HumanChat = (() => {
     msgList = panel.querySelector('#hc-msgs');
     badge   = panel.querySelector('#hc-badge');
     countEl = panel.querySelector('#hc-count');
+    badge.onclick = () => { if (filteredCount > 0) toggleBots(); };
 
     makeDraggable(panel, panel.querySelector('#hc-header'));
 
@@ -201,23 +219,31 @@ window.HumanChat = (() => {
     }
   }
 
-  function appendMsg(msg) {
+  function appendMsg(msg, isBot = false) {
     if (!msgList) return;
     const li = document.createElement('li');
-    li.className = 'hc-msg';
+    li.className = isBot ? 'hc-msg hc-bot' : 'hc-msg';
+    if (isBot && !showBots) li.style.display = 'none';
     li.innerHTML =
       `<span class="hc-time">${esc(msg.time)}</span>` +
       `<span class="hc-sender">${esc(msg.sender)}</span>` +
       (msg.subtitle ? `<span class="hc-subtitle">${esc(msg.subtitle)}</span>` : '') +
       `<span class="hc-text">${esc(msg.text)}</span>`;
     msgList.appendChild(li);
-    msgList.scrollTop = msgList.scrollHeight;
+    if (!isBot) msgList.scrollTop = msgList.scrollHeight;
   }
 
   function setBadge(n) {
     if (!badge) return;
-    badge.textContent = n > 0 ? `${n} filtered` : '';
-    badge.style.display = n > 0 ? '' : 'none';
+    if (n > 0) {
+      badge.textContent = showBots ? `${n} AI ▴` : `${n} AI ▾`;
+      badge.style.display = '';
+      badge.style.cursor = 'pointer';
+    } else {
+      badge.textContent = '';
+      badge.style.display = 'none';
+      badge.style.cursor = '';
+    }
   }
 
   function setCount(n) {
