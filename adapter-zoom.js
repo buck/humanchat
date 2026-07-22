@@ -24,7 +24,7 @@ const MSG_SELECTOR = '.chat-item-container';
 const downloadedIds = new Set();
 
 function extractText(el) {
-  const box = el.querySelector('.chat-message__text-box');
+  const box = el.querySelector('[class*="text-box"]');
   if (box) {
     return [...box.childNodes].map(n =>
       n.nodeName === 'IMG' ? (n.dataset.emoji || '') : n.textContent
@@ -33,7 +33,7 @@ function extractText(el) {
   const fileItem = el.querySelector('.chat-file-item[title]');
   if (fileItem) {
     const name = fileItem.title;
-    const ariaLabel = el.querySelector('.chat-message__container')?.getAttribute('aria-label') || '';
+    const ariaLabel = el.querySelector('[class*="chat-message__container"], [class*="chat-msg-container"]')?.getAttribute('aria-label') || '';
     const sizeMatch = ariaLabel.match(/,\s*([\d.]+\s*(?:KB|MB|GB|B))\s*,/i);
     const size = sizeMatch ? ` (${sizeMatch[1]})` : '';
     return `[file] ${name}${size}`;
