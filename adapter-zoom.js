@@ -11,6 +11,7 @@ HumanChat.init({
     const m = location.pathname.match(/\/wc\/(\d+)/);
     return m ? m[1] : 'zoom-meeting';
   },
+  captureQA,
 });
 
 // ── Zoom DOM parsing ──────────────────────────────────────────────────────────
@@ -52,6 +53,66 @@ function handleMessageNode(el) {
     downloadedIds.add(id);
     fileItem.click();
   }
+}
+
+// ── Q&A Capture ───────────────────────────────────────────────────────────────
+//
+// Zoom renders Q&A inside the same #webclient iframe as chat. The list is
+// virtualized (ReactVirtualized), so we must scroll it to surface all cards.
+// The panel auto-closes after user inactivity, so we re-open it if needed.
+
+function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+async function captureQA() {
+  const doc = document.querySelector('#webclient')?.contentDocument;
+  if (!doc) return;
+
+  // Open the Q&A panel if not already visible.
+  let container = doc.querySelector('.q-a-container');
+  if (!container || container.offsetHeight === 0) {
+    const btn = doc.querySelector('[class*="q-a-entry-button-container"]');
+    if (!btn) return;
+    btn.click();
+    await delay(500);
+    container = doc.querySelector('.q-a-container');
+    if (!container || container.offsetHeight === 0) return;
+  }
+
+  const scroller = doc.querySelector('.q-a-container__tab-content-wrapper');
+  if (!scroller) return;
+
+  scroller.scrollTop = 0;
+  await delay(300);
+
+  let prevTop = -1;
+  while (scroller.scrollTop !== prevTop) {
+    // If Zoom auto-closed the panel mid-scan, reopen and find scroller again.
+    if (container.offsetHeight === 0) {
+      const btn = doc.querySelector('[class*="q-a-entry-button-container"]');
+      if (btn) { btn.click(); await delay(500); }
+      break;
+    }
+    sweepQACards(doc);
+    prevTop = scroller.scrollTop;
+    scroller.scrollTop += Math.max(scroller.clientHeight * 0.75, 100);
+    await delay(300);
+  }
+  sweepQACards(doc);
+}
+
+function sweepQACards(doc) {
+  const cards = doc.querySelectorAll('li.q-a-question');
+  cards.forEach(function(card) {
+    const parsed = parseQACard(card);
+    if (parsed) HumanChat.recordQA(parsed.sender, '', parsed.question, 0);
+  });
+}
+
+function parseQACard(el) {
+  const sender   = (el.querySelector('.q-a-question__q-owner-name') || {}).textContent || '';
+  const question = (el.querySelector('.q-a-question__question-content') || {}).textContent || '';
+  if (!sender.trim() || !question.trim()) return null;
+  return { sender: sender.trim(), question: question.trim() };
 }
 
 // ── Observer ──────────────────────────────────────────────────────────────────
