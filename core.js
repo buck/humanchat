@@ -31,6 +31,7 @@ window.HumanChat = (() => {
     'grain', 'nyota', 'sembly', 'vowel',
     'airgram', 'bluedot', 'supernormal',
     'notetaker', 'note taker', 'note-taker',
+    'remi', 'linelogicai', 'line logic ai',
   ];
 
   const BOT_NAME_RX = [
@@ -59,6 +60,9 @@ window.HumanChat = (() => {
     /otter\.ai\//i,
     /^\s*🤖/,
     /^\s*📝/,
+    /i'?m remi by linelogicai/i,
+    /i('?m| am) recording audio and transcriptions/i,
+    /to stop recording, ask the host to remove me/i,
   ];
 
   function isBot(sender, text) {
