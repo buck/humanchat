@@ -40,6 +40,8 @@ function chat(sender, text) {
 
   // Bot-pattern messages from unfamiliar names — should also be filtered
   chat('Meeting Recorder Bot', 'Here to transcribe your meeting. I\'m taking notes.');
+  chat('Zoom AI for Nora Castillo', 'Hi everyone! I’m Zoom AI to assist Nora Castillo by transcribing this meeting.');
+  chat('Shannon Wiggen', 'Hey, I\'m using www.granola.ai to transcribe and take notes.');
   chat('AI Scribe',            'Recording has begun. I will summarize at the end.');
 
   // Human messages resume — should appear

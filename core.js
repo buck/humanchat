@@ -44,6 +44,7 @@ window.HumanChat = (() => {
     /auto[\s-]?record/i,
     /\bscribe\b/i,
     /\brecorder\b/i,
+    /^zoom ai for\b/i,
   ];
 
   const BOT_MSG_RX = [
@@ -63,6 +64,8 @@ window.HumanChat = (() => {
     /i'?m remi by linelogicai/i,
     /i('?m| am) recording audio and transcriptions/i,
     /to stop recording, ask the host to remove me/i,
+    /i['’]?m zoom ai to assist/i,
+    /i['’]?m using (www\.)?granola(\.ai)? to (transcribe|take notes)/i,
   ];
 
   function isBot(sender, text) {
